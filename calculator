@@ -1,0 +1,85 @@
+import matplotlib
+matplotlib.use("TkAgg")
+matplotlib.rcParams['toolbar'] = 'None'
+
+import numpy as np
+import matplotlib.pyplot as plt
+from PIL import Image
+
+# ---------------- WINDOW ----------------
+fig, ax = plt.subplots(figsize=(6,5))
+ax.axis("off")
+
+img = Image.open("Background.png").resize((600,500))
+ax.imshow(img)
+
+expression = ""
+
+display = ax.text(
+    300, 40, "",
+    ha='center', va='center',
+    fontsize=18,
+    bbox=dict(facecolor='white', alpha=0.9)
+)
+
+# ---------------- BUTTON POSITIONS ----------------
+buttons = {
+'7':(120,120),'8':(260,120),'9':(400,120),'/':(520,120),
+'4':(120,190),'5':(260,190),'6':(400,190),'*':(520,190),
+'1':(120,260),'2':(260,260),'3':(400,260),'-':(520,260),
+'0':(120,330),'%':(260,330),'C':(400,330),'+':(520,330),
+'=':(120,400)
+}
+
+# draw buttons
+for text,(x,y) in buttons.items():
+    rect = plt.Rectangle((x-60,y-25),120,50,
+                         facecolor='lightgray',edgecolor='black')
+    ax.add_patch(rect)
+    ax.text(x,y,text,ha='center',va='center',fontsize=12)
+
+# ---------------- CALCULATE ----------------
+def compute(val):
+    global expression
+    if val=='C':
+        expression=""
+    elif val=='=':
+        try:
+            result=str(eval(expression))
+            show_graph(expression,result)
+            expression=result
+        except:
+            expression="Error"
+    else:
+        expression+=val
+    display.set_text(expression)
+    fig.canvas.draw_idle()
+
+# ---------------- GRAPH ----------------
+def show_graph(expr,result):
+    x=np.linspace(0,10,200)
+    y=np.sin(x)+np.cos(2*x)
+
+    plt.figure("Result Graph")
+    plt.plot(x,y,'--',alpha=0.5)
+    plt.scatter([5],[0],color='red',s=120)
+    plt.title(f"{expr} = {result}",color="red")
+    plt.grid(True)
+    plt.show()
+
+# ---------------- CLICK HANDLER ----------------
+def onclick(event):
+    if event.xdata is None: return
+    x,y=event.xdata,event.ydata
+
+    for key,(bx,by) in buttons.items():
+        if bx-60<x<bx+60 and by-25<y<by+25:
+            compute(key)
+
+fig.canvas.mpl_connect('button_press_event', onclick)
+
+plt.show()
+
+  
+#Backgroundimage
+https://www.researchgate.net/publication/339729839/figure/fig4/AS:960089821286430@1605914659998/a-Color-Lena-image-b-Color-Baboon-image.png
